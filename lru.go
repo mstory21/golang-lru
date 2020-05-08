@@ -8,7 +8,7 @@ import (
 
 // Cache is a thread-safe fixed size LRU cache.
 type Cache struct {
-	lru  simplelru.LRUCache
+	LRU  simplelru.LRUCache
 	lock sync.RWMutex
 }
 
@@ -25,7 +25,7 @@ func NewWithEvict(size int, onEvicted func(key interface{}, value interface{})) 
 		return nil, err
 	}
 	c := &Cache{
-		lru: lru,
+		LRU: lru,
 	}
 	return c, nil
 }
@@ -33,14 +33,14 @@ func NewWithEvict(size int, onEvicted func(key interface{}, value interface{})) 
 // Purge is used to completely clear the cache.
 func (c *Cache) Purge() {
 	c.lock.Lock()
-	c.lru.Purge()
+	c.LRU.Purge()
 	c.lock.Unlock()
 }
 
 // Add adds a value to the cache. Returns true if an eviction occurred.
 func (c *Cache) Add(key, value interface{}) (evicted bool) {
 	c.lock.Lock()
-	evicted = c.lru.Add(key, value)
+	evicted = c.LRU.Add(key, value)
 	c.lock.Unlock()
 	return evicted
 }
@@ -48,7 +48,7 @@ func (c *Cache) Add(key, value interface{}) (evicted bool) {
 // Get looks up a key's value from the cache.
 func (c *Cache) Get(key interface{}) (value interface{}, ok bool) {
 	c.lock.Lock()
-	value, ok = c.lru.Get(key)
+	value, ok = c.LRU.Get(key)
 	c.lock.Unlock()
 	return value, ok
 }
@@ -57,7 +57,7 @@ func (c *Cache) Get(key interface{}) (value interface{}, ok bool) {
 // recent-ness or deleting it for being stale.
 func (c *Cache) Contains(key interface{}) bool {
 	c.lock.RLock()
-	containKey := c.lru.Contains(key)
+	containKey := c.LRU.Contains(key)
 	c.lock.RUnlock()
 	return containKey
 }
@@ -66,7 +66,7 @@ func (c *Cache) Contains(key interface{}) bool {
 // the "recently used"-ness of the key.
 func (c *Cache) Peek(key interface{}) (value interface{}, ok bool) {
 	c.lock.RLock()
-	value, ok = c.lru.Peek(key)
+	value, ok = c.LRU.Peek(key)
 	c.lock.RUnlock()
 	return value, ok
 }
@@ -78,10 +78,10 @@ func (c *Cache) ContainsOrAdd(key, value interface{}) (ok, evicted bool) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	if c.lru.Contains(key) {
+	if c.LRU.Contains(key) {
 		return true, false
 	}
-	evicted = c.lru.Add(key, value)
+	evicted = c.LRU.Add(key, value)
 	return false, evicted
 }
 
@@ -92,19 +92,19 @@ func (c *Cache) PeekOrAdd(key, value interface{}) (previous interface{}, ok, evi
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	previous, ok = c.lru.Peek(key)
+	previous, ok = c.LRU.Peek(key)
 	if ok {
 		return previous, true, false
 	}
 
-	evicted = c.lru.Add(key, value)
+	evicted = c.LRU.Add(key, value)
 	return nil, false, evicted
 }
 
 // Remove removes the provided key from the cache.
 func (c *Cache) Remove(key interface{}) (present bool) {
 	c.lock.Lock()
-	present = c.lru.Remove(key)
+	present = c.LRU.Remove(key)
 	c.lock.Unlock()
 	return
 }
@@ -112,7 +112,7 @@ func (c *Cache) Remove(key interface{}) (present bool) {
 // Resize changes the cache size.
 func (c *Cache) Resize(size int) (evicted int) {
 	c.lock.Lock()
-	evicted = c.lru.Resize(size)
+	evicted = c.LRU.Resize(size)
 	c.lock.Unlock()
 	return evicted
 }
@@ -120,7 +120,7 @@ func (c *Cache) Resize(size int) (evicted int) {
 // RemoveOldest removes the oldest item from the cache.
 func (c *Cache) RemoveOldest() (key interface{}, value interface{}, ok bool) {
 	c.lock.Lock()
-	key, value, ok = c.lru.RemoveOldest()
+	key, value, ok = c.LRU.RemoveOldest()
 	c.lock.Unlock()
 	return
 }
@@ -128,7 +128,7 @@ func (c *Cache) RemoveOldest() (key interface{}, value interface{}, ok bool) {
 // GetOldest returns the oldest entry
 func (c *Cache) GetOldest() (key interface{}, value interface{}, ok bool) {
 	c.lock.Lock()
-	key, value, ok = c.lru.GetOldest()
+	key, value, ok = c.LRU.GetOldest()
 	c.lock.Unlock()
 	return
 }
@@ -136,7 +136,7 @@ func (c *Cache) GetOldest() (key interface{}, value interface{}, ok bool) {
 // Keys returns a slice of the keys in the cache, from oldest to newest.
 func (c *Cache) Keys() []interface{} {
 	c.lock.RLock()
-	keys := c.lru.Keys()
+	keys := c.LRU.Keys()
 	c.lock.RUnlock()
 	return keys
 }
@@ -144,7 +144,7 @@ func (c *Cache) Keys() []interface{} {
 // Len returns the number of items in the cache.
 func (c *Cache) Len() int {
 	c.lock.RLock()
-	length := c.lru.Len()
+	length := c.LRU.Len()
 	c.lock.RUnlock()
 	return length
 }
